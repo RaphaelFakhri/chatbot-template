@@ -52,7 +52,11 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: modelId,
-    messages: await convertToModelMessages(messages),
+    // Drop tool calls that never got a result, such as an ask_user question
+    // the user skipped by typing a new message, so the chat can continue.
+    messages: await convertToModelMessages(messages, {
+      ignoreIncompleteToolCalls: true,
+    }),
     tools,
     stopWhen: isStepCount(5),
     maxOutputTokens: MAX_OUTPUT_TOKENS,
